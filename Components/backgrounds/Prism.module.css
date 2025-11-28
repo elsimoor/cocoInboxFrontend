@@ -1,0 +1,12 @@
+.container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.container :global(canvas) {
+  filter: saturate(1.15) brightness(1.05);
+  mix-blend-mode: screen;
+}
+
