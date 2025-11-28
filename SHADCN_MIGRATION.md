@@ -41,7 +41,7 @@ Shared components:
 - 🔄 Remaining app pages: inbox, sms, admin, users, domains, ephemeral-email, f/[id] (pending)
 
 ## Conventions
-- Use `@/Components/ui/*` alias (capital C for Windows compatibility)
+- Use `@/components/ui/*` alias (capital C for Windows compatibility)
 - Marketing pages use inline landing navbar style with tropical gradient (linear-gradient(180deg, #38BDF8, #22D3EE, #06B6D4))
 - App pages use dashboard Navbar component
 - White text on gradient backgrounds for visibility (color: "white" or "rgba(255, 255, 255, 0.9)")

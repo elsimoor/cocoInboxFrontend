@@ -3,10 +3,10 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
 import { useAuth } from '../contexts/AuthContext';
-import { Card, CardContent } from '@/Components/ui/card';
-import { Label } from '@/Components/ui/label';
-import { Input } from '@/Components/ui/input';
-import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Lock, Mail, ArrowRight, Shield, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {

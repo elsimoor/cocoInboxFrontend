@@ -1,8 +1,8 @@
 "use client"
 
 import Head from "next/head"
-import { Card, CardContent } from "@/Components/ui/card"
-import NavBarLandingPage from "@/Components/NavBarLandingPage"
+import { Card, CardContent } from "@/components/ui/card"
+import NavBarLandingPage from "@/components/NavBarLandingPage"
 import Image from "next/image"
 import { Shield, Lock, Zap, ArrowRight, Users, Globe } from "lucide-react"
 

@@ -2,9 +2,9 @@
 
 import Head from "next/head"
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card"
-import { Button } from "@/Components/ui/button"
-import NavBarLandingPage from "@/Components/NavBarLandingPage"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import NavBarLandingPage from "@/components/NavBarLandingPage"
 
 export default function PricingPage() {
   const plans = [

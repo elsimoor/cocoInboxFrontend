@@ -2,8 +2,8 @@
 
 import Head from "next/head"
 import Link from "next/link"
-import { Card, CardContent } from "@/Components/ui/card"
-import NavBarLandingPage from "@/Components/NavBarLandingPage"
+import { Card, CardContent } from "@/components/ui/card"
+import NavBarLandingPage from "@/components/NavBarLandingPage"
 import { Rocket, Lock, Shield, Calendar, ArrowRight, Tag } from "lucide-react"
 import Image from "next/image"
 

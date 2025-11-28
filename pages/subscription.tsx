@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react'
-import Layout from '@/Components/Layout'
+import Layout from '@/components/Layout'
 import { useAuth } from '@/contexts/AuthContext'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card'
-import { Button } from '@/Components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { useBilling } from '@/hooks/useBilling'
 import { useRouter } from 'next/router'
 

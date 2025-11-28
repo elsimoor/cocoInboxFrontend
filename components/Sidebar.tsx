@@ -155,8 +155,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { LayoutDashboard, Mail, Inbox, FileText, FolderOpen, Users, Settings, X, PlusCircle, HelpCircle, Network } from "lucide-react"
-import { Button } from "@/Components/ui/button"
-import { ScrollArea } from "@/Components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/contexts/AuthContext"
 
 type Props = {

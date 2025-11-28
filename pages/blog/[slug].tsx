@@ -2,7 +2,7 @@
 
 import Head from "next/head"
 import { useRouter } from "next/router"
-import NavBarLandingPage from "@/Components/NavBarLandingPage"
+import NavBarLandingPage from "@/components/NavBarLandingPage"
 import { Calendar, Clock, ArrowLeft, Share2, Bookmark, Rocket, Lock, Shield, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"

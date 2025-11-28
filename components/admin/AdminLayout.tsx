@@ -6,7 +6,6 @@ import { useRouter } from "next/router"
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 import {
@@ -21,6 +20,7 @@ import {
   FileDown,
   Plus,
 } from "lucide-react"
+import { Badge } from "../ui/badge"
 
 type AdminLayoutProps = {
   title: string

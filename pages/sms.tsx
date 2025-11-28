@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Layout from '../Components/Layout';
+import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import { useSms } from '../hooks/useSms';
 import { useRouter } from 'next/router';

@@ -1,8 +1,8 @@
 "use client"
 
 import Head from "next/head"
-import { Card, CardContent } from "@/Components/ui/card"
-import NavBarLandingPage from "@/Components/NavBarLandingPage"
+import { Card, CardContent } from "@/components/ui/card"
+import NavBarLandingPage from "@/components/NavBarLandingPage"
 import { HelpCircle, Mail, Shield, Gift, Clock, Users, Lock, ArrowRight } from "lucide-react"
 import { useState } from "react"
 

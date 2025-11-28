@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Layout from '@/Components/Layout'
+import Layout from '@/components/Layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/router'
 import { useBilling } from '@/hooks/useBilling'

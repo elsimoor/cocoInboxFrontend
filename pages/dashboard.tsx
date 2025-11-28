@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../Components/Layout';
+import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import { useStats } from '../hooks/useStats';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const { user, loading, refreshUser, token } = useAuth();

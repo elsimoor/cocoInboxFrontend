@@ -11,7 +11,7 @@
   },
   "iconLibrary": "radix",
   "aliases": {
-    "components": "@/Components",
+    "components": "@/components",
     "utils": "@/lib/utils"
   },
   "registries": {
