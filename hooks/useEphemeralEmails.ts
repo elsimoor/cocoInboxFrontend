@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 // Base URL for the backend API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-interface EphemeralEmail {
+export interface EphemeralEmail {
   id: string;
   user_id: string;
   email_address: string;
@@ -12,22 +12,27 @@ interface EphemeralEmail {
   expires_at: string;
   is_active: boolean;
   created_at: string;
+  provider?: string;
 }
 
 export const useEphemeralEmails = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [emails, setEmails] = useState<EphemeralEmail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEmails = async () => {
-    if (!user) {
+    if (!user || !token) {
       setEmails([]);
       setLoading(false);
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/emails/user/${user.id}`);
+      const res = await fetch(`${API_BASE_URL}/api/emails/user/${user.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) {
         throw new Error('Failed to fetch emails');
       }
@@ -42,14 +47,20 @@ export const useEphemeralEmails = () => {
 
   useEffect(() => {
     fetchEmails();
-  }, [user]);
+  }, [user, token]);
 
   const createEmail = async (aliasName?: string) => {
-    if (!user) return null;
+    if (!user || !token) {
+      setError('You must be signed in to create emails');
+      return null;
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/emails/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ userId: user.id, aliasName }),
       });
       if (!res.ok) {
@@ -66,10 +77,17 @@ export const useEphemeralEmails = () => {
   };
 
   const deactivateEmail = async (emailId: string) => {
+    if (!user || !token) {
+      setError('You must be signed in to deactivate emails');
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ userId: user?.id }),
       });
       if (!res.ok) {
