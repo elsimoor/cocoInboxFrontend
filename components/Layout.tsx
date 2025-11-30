@@ -20,10 +20,13 @@ export default function AppLayout({ children, title }: Props) {
     const grace = (user as any).proGraceUntil ? new Date((user as any).proGraceUntil as any) : null
     const periodEnd = (user as any).subscriptionCurrentPeriodEnd ? new Date((user as any).subscriptionCurrentPeriodEnd as any) : null
     const now = new Date()
-    const statusNeedsPay = status && ['past_due','unpaid','incomplete','incomplete_expired','canceled'].includes(status as any)
+    const statusNeedsPay = status ? ['past_due','unpaid','incomplete','incomplete_expired','canceled'].includes(status as any) : false
     const periodPassed = periodEnd ? periodEnd.getTime() <= now.getTime() : false
     const inGrace = grace ? grace.getTime() > now.getTime() : false
-    return statusNeedsPay || (periodPassed && inGrace) || (!!grace && inGrace)
+    // Only show when Stripe reports a problematic status or the account is in a grace window
+    // because the billing period already ended. Active subscribers with a future grace date
+    // should not see the warning.
+    return statusNeedsPay || (inGrace && periodPassed && !statusNeedsPay)
   })()
 
   return (
