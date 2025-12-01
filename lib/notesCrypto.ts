@@ -46,7 +46,7 @@ export interface EncryptedNotePayload extends NoteCipherMeta {
   encryptedContent: string;
 }
 
-export async function vaultIdFor(userId: string, cryptoAlgo: NoteAlgo, password: string, iterations = 120000): Promise<string> {
+export async function vaultIdFor(userId: string, cryptoAlgo: NoteAlgo, password: string, iterations = 15000): Promise<string> {
   const salt = ENC.encode(`vault:${userId}:${cryptoAlgo}`);
   const bits = await pbkdf2(password, new Uint8Array(salt), iterations, 256);
   return toB64(bits);
@@ -62,10 +62,13 @@ export async function encryptNote(
   const salt = crypto.getRandomValues(new Uint8Array(16));
   if (algo === 'AES-GCM') {
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const bits = await pbkdf2(password, salt, iterations, 256);
-    const key = await crypto.subtle.importKey('raw', bits, { name: 'AES-GCM' }, false, ['encrypt']);
-  const ctTitle = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, key, toArrayBuffer(ENC.encode(title)));
-  const ctContent = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, key, toArrayBuffer(ENC.encode(content)));
+    // Derive 512 bits and split into two keys to avoid key+IV reuse
+    const bits = await pbkdf2(password, salt, iterations, 512);
+    const dk = new Uint8Array(bits);
+    const keyTitle = await crypto.subtle.importKey('raw', dk.slice(0, 32), { name: 'AES-GCM' }, false, ['encrypt']);
+    const keyContent = await crypto.subtle.importKey('raw', dk.slice(32, 64), { name: 'AES-GCM' }, false, ['encrypt']);
+    const ctTitle = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, keyTitle, toArrayBuffer(ENC.encode(title)));
+    const ctContent = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, keyContent, toArrayBuffer(ENC.encode(content)));
     return {
       cryptoAlgo: 'AES-GCM',
       kdf: 'PBKDF2',
@@ -105,10 +108,19 @@ export async function decryptNoteTitle(meta: NoteCipherMeta, encryptedTitle: str
   const iv = fromB64(meta.iv);
   const salt = fromB64(meta.salt);
   if (meta.cryptoAlgo === 'AES-GCM') {
-    const bits = await pbkdf2(password, salt, meta.kdfIterations, 256);
-    const key = await crypto.subtle.importKey('raw', bits, { name: 'AES-GCM' }, false, ['decrypt']);
-  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, key, toArrayBuffer(fromB64(encryptedTitle)));
-    return DEC.decode(pt);
+    // Try split-key first (preferred), fallback to single-key for legacy notes
+    try {
+      const bits = await pbkdf2(password, salt, meta.kdfIterations, 512);
+      const dk = new Uint8Array(bits);
+      const keyTitle = await crypto.subtle.importKey('raw', dk.slice(0, 32), { name: 'AES-GCM' }, false, ['decrypt']);
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, keyTitle, toArrayBuffer(fromB64(encryptedTitle)));
+      return DEC.decode(pt);
+    } catch {
+      const bits256 = await pbkdf2(password, salt, meta.kdfIterations, 256);
+      const keyLegacy = await crypto.subtle.importKey('raw', bits256, { name: 'AES-GCM' }, false, ['decrypt']);
+      const ptLegacy = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, keyLegacy, toArrayBuffer(fromB64(encryptedTitle)));
+      return DEC.decode(ptLegacy);
+    }
   } else {
     const bits = await pbkdf2(password, salt, meta.kdfIterations, 512);
     const keyBytes = new Uint8Array(bits);
@@ -124,10 +136,19 @@ export async function decryptNoteContent(meta: NoteCipherMeta, encryptedContent:
   const iv = fromB64(meta.iv);
   const salt = fromB64(meta.salt);
   if (meta.cryptoAlgo === 'AES-GCM') {
-    const bits = await pbkdf2(password, salt, meta.kdfIterations, 256);
-    const key = await crypto.subtle.importKey('raw', bits, { name: 'AES-GCM' }, false, ['decrypt']);
-  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, key, toArrayBuffer(fromB64(encryptedContent)));
-    return DEC.decode(pt);
+    // Try content-key (second half), fallback to single-key legacy
+    try {
+      const bits = await pbkdf2(password, salt, meta.kdfIterations, 512);
+      const dk = new Uint8Array(bits);
+      const keyContent = await crypto.subtle.importKey('raw', dk.slice(32, 64), { name: 'AES-GCM' }, false, ['decrypt']);
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, keyContent, toArrayBuffer(fromB64(encryptedContent)));
+      return DEC.decode(pt);
+    } catch {
+      const bits256 = await pbkdf2(password, salt, meta.kdfIterations, 256);
+      const keyLegacy = await crypto.subtle.importKey('raw', bits256, { name: 'AES-GCM' }, false, ['decrypt']);
+      const ptLegacy = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toArrayBuffer(iv) }, keyLegacy, toArrayBuffer(fromB64(encryptedContent)));
+      return DEC.decode(ptLegacy);
+    }
   } else {
     const bits = await pbkdf2(password, salt, meta.kdfIterations, 512);
     const keyBytes = new Uint8Array(bits);
