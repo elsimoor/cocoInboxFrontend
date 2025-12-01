@@ -19,6 +19,8 @@ export default function Notes() {
   const [algo, setAlgo] = useState<NoteAlgo>('AES-GCM');
   const [vaultPassword, setVaultPassword] = useState('');
   const [vaultLoaded, setVaultLoaded] = useState(false);
+  const [decodingTitles, setDecodingTitles] = useState(false);
+  const [titlesProgress, setTitlesProgress] = useState(0);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -106,14 +108,25 @@ export default function Notes() {
                   onClick={async () => {
                     const list = await listVaultNotes(algo, vaultPassword);
                     const map: Record<string, string> = {};
-                    for (const n of list) {
-                      try { map[n.id] = await decryptTitle(n, vaultPassword); } catch {}
+                    if (list.length) {
+                      setDecodingTitles(true);
+                      setTitlesProgress(0);
+                      for (let i = 0; i < list.length; i++) {
+                        const n = list[i];
+                        try { map[n.id] = await decryptTitle(n, vaultPassword); } catch {}
+                        setTitlesProgress((i + 1) / list.length);
+                        if (i % 2 === 0) await new Promise(r => setTimeout(r, 0));
+                      }
+                      setDecodingTitles(false);
                     }
                     setDecryptedTitles(map);
                     setVaultLoaded(true);
                   }}
                 >Open Vault</Button>
               </div>
+              {decodingTitles && (
+                <div className="progress"><div className="progress-bar" style={{ width: `${Math.round(titlesProgress*100)}%` }} /></div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -172,7 +185,7 @@ export default function Notes() {
             {notes.map((note) => (
               <Card key={note.id}>
                 <CardHeader>
-                  <CardTitle className="text-lg">{decryptedTitles[note.id] || '••••••'}</CardTitle>
+                  <CardTitle className="text-lg">{decryptedTitles[note.id] ? decryptedTitles[note.id] : <span className="shimmer">••••••</span>}</CardTitle>
                   <CardDescription>
                     <span className="text-xs text-muted-foreground">
                       Created: {new Date(note.created_at).toLocaleDateString()}
@@ -231,6 +244,10 @@ export default function Notes() {
         .notes-page {
           max-width: 1200px;
           margin: 0 auto;
+          background: radial-gradient(1200px 600px at 110% -10%, rgba(59,130,246,0.08), transparent),
+                      radial-gradient(900px 500px at -10% 0%, rgba(16,185,129,0.06), transparent);
+          border-radius: 16px;
+          padding: 8px;
         }
         .header {
           display: flex;
@@ -244,6 +261,9 @@ export default function Notes() {
           font-size: 36px;
           color: #1e293b;
           margin: 0 0 8px 0;
+          background: linear-gradient(90deg, #1e293b, #0ea5e9);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
         .subtitle { color: #64748b; font-size: 16px; margin: 0; }
         .vault-gate { position: relative; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px; }
@@ -261,10 +281,13 @@ export default function Notes() {
           font-size: 16px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+          box-shadow: 0 8px 24px rgba(37,99,235,0.25);
         }
         .create-btn:hover {
           background: #1d4ed8;
+          transform: translateY(-1px);
+          box-shadow: 0 12px 28px rgba(37,99,235,0.35);
         }
         .create-form {
           background: white;
@@ -407,14 +430,37 @@ export default function Notes() {
         .delete-btn:hover {
           background: #dc2626;
         }
-        .vault-blur { position: relative; height: 180px; background: #f8fafc; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .blur-overlay { position: absolute; inset: 0; backdrop-filter: blur(6px); }
+        .vault-blur { position: relative; height: 180px; background: linear-gradient(135deg, #f8fafc, #eef2ff); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .blur-overlay { position: absolute; inset: 0; backdrop-filter: blur(8px); background: radial-gradient(600px 200px at 20% -20%, rgba(14,165,233,0.15), transparent); }
         .blur-text { position: relative; color: #334155; font-weight: 600; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; border-radius: 12px; max-width: 800px; width: 100%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
         .close { background: transparent; border: none; font-size: 24px; cursor: pointer; }
         .note-body { white-space: pre-wrap; padding: 16px; margin: 0; color: #0f172a; }
+
+        .progress { height: 6px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; margin-top: 12px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #22c55e, #0ea5e9); transition: width 160ms ease; }
+
+        .shimmer {
+          position: relative;
+          display: inline-block;
+          color: transparent;
+        }
+        .shimmer::before {
+          content: '••••••';
+          display: inline-block;
+          background: linear-gradient(100deg, rgba(226,232,240,0.6) 30%, rgba(203,213,225,0.9) 40%, rgba(226,232,240,0.6) 60%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: shimmer 1.4s infinite;
+        }
+        @keyframes shimmer {
+          0% { filter: brightness(0.95); }
+          50% { filter: brightness(1.1); }
+          100% { filter: brightness(0.95); }
+        }
       `}</style>
     </Layout>
   );

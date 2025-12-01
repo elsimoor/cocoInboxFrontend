@@ -5,6 +5,9 @@
 const ENC = new TextEncoder();
 const DEC = new TextDecoder();
 
+const NOTE_KDF_DEFAULT = Number(process.env.NEXT_PUBLIC_NOTE_KDF_ITER || 30000);
+const VAULT_KDF_DEFAULT = Number(process.env.NEXT_PUBLIC_VAULT_KDF_ITER || 15000);
+
 function toB64(buf: ArrayBuffer | Uint8Array): string {
   const arr = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
   let bin = '';
@@ -46,7 +49,7 @@ export interface EncryptedNotePayload extends NoteCipherMeta {
   encryptedContent: string;
 }
 
-export async function vaultIdFor(userId: string, cryptoAlgo: NoteAlgo, password: string, iterations = 15000): Promise<string> {
+export async function vaultIdFor(userId: string, cryptoAlgo: NoteAlgo, password: string, iterations = VAULT_KDF_DEFAULT): Promise<string> {
   const salt = ENC.encode(`vault:${userId}:${cryptoAlgo}`);
   const bits = await pbkdf2(password, new Uint8Array(salt), iterations, 256);
   return toB64(bits);
@@ -57,7 +60,7 @@ export async function encryptNote(
   content: string,
   password: string,
   algo: NoteAlgo,
-  iterations = 250000
+  iterations = NOTE_KDF_DEFAULT
 ): Promise<EncryptedNotePayload> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   if (algo === 'AES-GCM') {

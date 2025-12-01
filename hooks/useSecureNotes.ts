@@ -65,7 +65,7 @@ export const useSecureNotes = () => {
     autoDeleteAfterRead: boolean = false,
     expiresAt?: string,
     expiresInMinutes?: number,
-    kdfIterations: number = 250000,
+    kdfIterations?: number,
   ) => {
     if (!user) return null;
     try {
