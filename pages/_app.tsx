@@ -17,7 +17,9 @@ function Guard({ children }: { children: React.ReactNode }) {
       return;
     }
     const isAuthPage = path === "/login" || path === "/register" || path === "/signup" || path === "/";
-    if (!user && !isAuthPage) {
+    // Public share/download routes (allow unauthenticated access)
+    const isPublicShareRoute = path === "/f/[id]" || path.startsWith("/f/");
+    if (!user && !isAuthPage && !isPublicShareRoute) {
       router.replace(`/login?next=${encodeURIComponent(path)}`);
       return;
     }

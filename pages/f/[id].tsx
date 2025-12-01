@@ -24,9 +24,10 @@ export default function FileDownload() {
       }
       const meta = await res.json();
       setStatus('Downloading encrypted file...');
-      const encRes = await fetch(meta.url);
-      if (!encRes.ok) throw new Error('Failed to fetch file');
-      const encrypted = await encRes.arrayBuffer();
+      // Fetch encrypted blob via backend proxy to avoid CORS issues on prod
+      const blobRes = await fetch(`${API_BASE_URL}/api/files/${id}/blob?password=${encodeURIComponent(password)}`);
+      if (!blobRes.ok) throw new Error('Failed to fetch encrypted blob');
+      const encrypted = await blobRes.arrayBuffer();
 
       setStatus('Decrypting...');
       const plain = await decryptBytes(encrypted, password, meta.iv, meta.salt, meta.kdfIterations);
